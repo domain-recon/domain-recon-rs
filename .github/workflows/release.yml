@@ -152,12 +152,41 @@ jobs:
           make -f ../../Makefile build-release-tar tag=${{ github.ref_name }} target=armv7-unknown-linux-musleabihf
           make -f ../../Makefile build-release-tar tag=${{ github.ref_name }} target=armv7-unknown-linux-musleabi
 
+      - name: create sample script
+        working-directory: target/github-release
+        run: |
+          mkdir -p .debpkg/usr/bin
+          mkdir -p .rpmpkg/usr/bin
+          cp -p target/x86_64-unknown-linux-musl/release/* .debpkg/usr/bin/
+          cp -p target/x86_64-unknown-linux-musl/release/* .rpmpkg/usr/bin/
+
+      - uses: jiro4989/build-deb-action@v3
+        with:
+          package: domain-recon
+          package_root: .debpkg
+          maintainer: Ervin Szilagyi
+          version: ${{ github.ref }}
+          arch: 'amd64'
+          desc: 'Extract domains and subdomains from certificates.'
+
+      - uses: jiro4989/build-rpm-action@v2
+        with:
+          summary: 'Extract domains and subdomains from certificates.'
+          package: domain-recon
+          package_root: .rpmpkg
+          maintainer: Ervin Szilagyi
+          version: ${{ github.ref }}
+          arch: 'x86_64'
+          desc: 'Extract domains and subdomains from certificates.'
+
       - name: Move release files to upload
         run: |
           mkdir -p target/upload
           mv target/github-release/*.tar.gz* target/upload
           mv target/github-release/*.zip* target/upload
           mv target/github-release/**/*.whl target/upload
+          mv .debpkg/*.deb target/upload
+          mv .debpkg/*.rpm target/upload
 
       - name: Upload binaries to GitHub Release
         uses: softprops/action-gh-release@v1

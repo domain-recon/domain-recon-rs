@@ -123,3 +123,11 @@ This project requires **Rust 1.83** or above.
 cd domain-recon-rs
 cargo build --release
 ```
+
+## Distribute
+
+### Building .deg packages with Docker
+
+```
+docker build --target artifact --output type=local,dest=distribute .
+```

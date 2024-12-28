@@ -1,0 +1,33 @@
+FROM messense/rust-musl-cross:aarch64-musl AS builder
+
+WORKDIR /domain-recon-rs
+
+COPY ./ .
+
+ENV RUST_BACKTRACE=full
+
+RUN cargo build --target aarch64-unknown-linux-musl --release
+
+FROM debian:latest as dist
+
+ARG VERSION=1.3.0
+ARG ARCH=arm64
+
+WORKDIR /debpkgs
+
+RUN mkdir -p domain-recon_${VERSION}_${ARCH}/DEBIAN && \
+    mkdir -p domain-recon_${VERSION}_${ARCH}/usr/bin
+
+COPY control domain-recon_${VERSION}_arm64/DEBIAN
+
+COPY --from=builder /domain-recon-rs/target/aarch64-unknown-linux-musl/release/domain-recon ./domain-recon_${VERSION}_${ARCH}/usr/bin/domain-recon
+
+RUN dpkg-deb --build domain-recon_${VERSION}_arm64
+
+FROM scratch as artifact
+
+ARG VERSION=1.3.0
+ARG ARCH=arm64
+
+COPY --from=dist /debpkgs/domain-recon_${VERSION}_${ARCH}.deb .
+

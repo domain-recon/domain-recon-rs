@@ -1,0 +1,8 @@
+Package: domain-recon
+Version: {{VERSION}}
+Architecture: {{ARCH}}
+Essential: no
+Priority: optional
+Depends:
+Maintainer: Ervin Szilagyi
+Description: Extract domains and subdomains from certificates.
